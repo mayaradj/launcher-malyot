@@ -20,7 +20,7 @@ namespace CanaryLauncherUpdate
 {
 	public partial class MainWindow : Window
 	{
-		static string launcerConfigUrl = "https://raw.githubusercontent.com/mayaradj/launcher-malyot/0396a19d842d0bb38f378e4614ec67c5e8f618cc/launcher_config.json?token=GHSAT0AAAAAADE2UQ4HKWD3NPIY37ME5JDI2DVXKCQ";
+		static string launcerConfigUrl = "https://raw.githubusercontent.com/mayaradj/launcher-malyot/refs/heads/main/launcher_config.json";
 		// Load informations of launcher_config.json file
 		static ClientConfig clientConfig = ClientConfig.loadFromFile(launcerConfigUrl);
 
