@@ -204,7 +204,62 @@ namespace MalyOtLauncherUpdate
 
 		private void buttonPlay_Click(object sender, RoutedEventArgs e)
 		{
-			if (needUpdate == true || !Directory.Exists(GetLauncherPath()))
+			// Sempre baixa o arquivo remoto para um arquivo temporário antes de qualquer ação
+			string tempConfigPath = Path.Combine(GetLauncherPath(true), "launcher_config_remote.json");
+			try
+			{
+				new WebClient().DownloadFile(launcerConfigUrl, tempConfigPath);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Erro ao baixar o arquivo de configuração remoto: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
+
+			// Lê as versões
+			string remoteVersion = "";
+			string localVersion = "";
+			if (File.Exists(tempConfigPath))
+			{
+				try
+				{
+					using (StreamReader stream = new StreamReader(tempConfigPath))
+					{
+						dynamic jsonString = stream.ReadToEnd();
+						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
+						remoteVersion = versionclient["clientVersion"];
+					}
+				}
+				catch { }
+			}
+			if (File.Exists(GetLauncherPath(true) + "/launcher_config.json"))
+			{
+				try
+				{
+					using (StreamReader stream = new StreamReader(GetLauncherPath(true) + "/launcher_config.json"))
+					{
+						dynamic jsonString = stream.ReadToEnd();
+						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
+						localVersion = versionclient["clientVersion"];
+					}
+				}
+				catch { }
+			}
+
+			// Se as versões forem diferentes, força o update
+			if (remoteVersion != localVersion)
+			{
+				UpdateClient();
+				return;
+			}
+
+			// Se as versões forem iguais, permite abrir o cliente normalmente
+			if (clientDownloaded == true || !Directory.Exists(GetLauncherPath(true)))
+			{
+				Process.Start(GetLauncherPath() + "/bin/" + clientExecutableName);
+				this.Close();
+			}
+			else
 			{
 				try
 				{
@@ -213,25 +268,6 @@ namespace MalyOtLauncherUpdate
 				catch (Exception ex)
 				{
 					labelVersion.Text = ex.ToString();
-				}
-			}
-			else
-			{
-				if (clientDownloaded == true || !Directory.Exists(GetLauncherPath(true)))
-				{
-					Process.Start(GetLauncherPath() + "/bin/" + clientExecutableName);
-					this.Close();
-				}
-				else
-				{
-					try
-					{
-						UpdateClient();
-					}
-					catch (Exception ex)
-					{
-						labelVersion.Text = ex.ToString();
-					}
 				}
 			}
 		}
@@ -315,11 +351,12 @@ namespace MalyOtLauncherUpdate
 			string localPath = Path.Combine(GetLauncherPath(true), "launcher_config.json");
 			webClient.DownloadFile(launcerConfigUrl, localPath);
 
-			// Após a atualização, substituir o arquivo launcher_config.json local pelo remoto
+			// Após a atualização, substituir o arquivo launcher_config.json local pelo remoto e remover o temporário
 			string tempConfigPath = Path.Combine(GetLauncherPath(true), "launcher_config_remote.json");
 			if (File.Exists(tempConfigPath))
 			{
 				File.Copy(tempConfigPath, localPath, true);
+				File.Delete(tempConfigPath); // Remove o arquivo temporário
 			}
 
 			AddReadOnly();
