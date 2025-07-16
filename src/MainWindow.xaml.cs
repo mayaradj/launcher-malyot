@@ -250,6 +250,10 @@ namespace MalyOtLauncherUpdate
 			if (remoteVersion != localVersion)
 			{
 				UpdateClient();
+				if (File.Exists(tempConfigPath))
+				{
+					File.Delete(tempConfigPath);
+				}
 				return;
 			}
 
