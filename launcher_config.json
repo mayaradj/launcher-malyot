@@ -24,6 +24,6 @@ NOTE: Set it to "false" or only "" to not use the client folder, so everything w
 		}
 	],
 	"clientFolder": "Tibia",
-	"newClientUrl": "https://github.com/mayaradj/launcher-malyot/releases/download/download/tibia.zip",
+	"newClientUrl": "https://github.com/mayaradj/launcher-malyot/releases/download/update/client-to-update.zip",
 	"clientExecutable": "client.exe"
 }
