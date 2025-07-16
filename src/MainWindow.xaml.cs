@@ -77,11 +77,11 @@ namespace MalyOtLauncherUpdate
 			ImageLogoServer.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/logo.png"));
 			ImageLogoCompany.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/logo_company.png"));
 
-			// Sempre baixa o arquivo remoto para um arquivo temporário
-			string tempConfigPath = Path.Combine(GetLauncherPath(true), "launcher_config_remote.json");
+			// Sempre baixa o arquivo remoto e sobrescreve o local
+			string configPath = Path.Combine(GetLauncherPath(true), "launcher_config.json");
 			try
 			{
-				new WebClient().DownloadFile(launcerConfigUrl, tempConfigPath);
+				new WebClient().DownloadFile(launcerConfigUrl, configPath);
 			}
 			catch (Exception ex)
 			{
@@ -89,27 +89,13 @@ namespace MalyOtLauncherUpdate
 				return;
 			}
 
-			// Lê as versões
-			string remoteVersion = "";
+			// Lê a versão local (que agora é a remota)
 			string localVersion = "";
-			if (File.Exists(tempConfigPath))
+			if (File.Exists(configPath))
 			{
 				try
 				{
-					using (StreamReader stream = new StreamReader(tempConfigPath))
-					{
-						dynamic jsonString = stream.ReadToEnd();
-						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
-						remoteVersion = versionclient["clientVersion"];
-					}
-				}
-				catch { }
-			}
-			if (File.Exists(GetLauncherPath(true) + "/launcher_config.json"))
-			{
-				try
-				{
-					using (StreamReader stream = new StreamReader(GetLauncherPath(true) + "/launcher_config.json"))
+					using (StreamReader stream = new StreamReader(configPath))
 					{
 						dynamic jsonString = stream.ReadToEnd();
 						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
@@ -124,29 +110,20 @@ namespace MalyOtLauncherUpdate
 			labelClientVersion.Visibility = Visibility.Collapsed;
 			labelDownloadPercent.Visibility = Visibility.Collapsed;
 
-			if (remoteVersion != localVersion)
+			// Sempre mostra o botão de update se o cliente não estiver atualizado
+			string installedVersion = GetClientVersion(GetLauncherPath(true));
+			if (localVersion != installedVersion)
 			{
 				buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_update.png")));
 				buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_update.png"));
-				labelClientVersion.Content = remoteVersion;
+				labelClientVersion.Content = localVersion;
 				labelClientVersion.Visibility = Visibility.Visible;
 				buttonPlay.Visibility = Visibility.Visible;
 				buttonPlay_tooltip.Text = "Update";
 				needUpdate = true;
 			}
-			else if (!File.Exists(GetLauncherPath(true) + "/launcher_config.json") || (Directory.Exists(GetLauncherPath()) && Directory.GetFiles(GetLauncherPath()).Length == 0 && Directory.GetDirectories(GetLauncherPath()).Length == 0))
-			{
-				buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_update.png")));
-				buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_update.png"));
-				labelClientVersion.Content = "Download";
-				labelClientVersion.Visibility = Visibility.Visible;
-				buttonPlay.Visibility = Visibility.Visible;
-				buttonPlay_tooltip.Text = "Download";
-				needUpdate = true;
-			}
 			else
 			{
-				// Se as versões são iguais, mostra o botão de play normalmente
 				buttonPlay.Visibility = Visibility.Visible;
 				buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_play.png"));
 				buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_play.png")));
@@ -204,66 +181,7 @@ namespace MalyOtLauncherUpdate
 
 		private void buttonPlay_Click(object sender, RoutedEventArgs e)
 		{
-			// Sempre baixa o arquivo remoto para um arquivo temporário antes de qualquer ação
-			string tempConfigPath = Path.Combine(GetLauncherPath(true), "launcher_config_remote.json");
-			try
-			{
-				new WebClient().DownloadFile(launcerConfigUrl, tempConfigPath);
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show($"Erro ao baixar o arquivo de configuração remoto: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
-				return;
-			}
-
-			// Lê as versões
-			string remoteVersion = "";
-			string localVersion = "";
-			if (File.Exists(tempConfigPath))
-			{
-				try
-				{
-					using (StreamReader stream = new StreamReader(tempConfigPath))
-					{
-						dynamic jsonString = stream.ReadToEnd();
-						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
-						remoteVersion = versionclient["clientVersion"];
-					}
-				}
-				catch { }
-			}
-			if (File.Exists(GetLauncherPath(true) + "/launcher_config.json"))
-			{
-				try
-				{
-					using (StreamReader stream = new StreamReader(GetLauncherPath(true) + "/launcher_config.json"))
-					{
-						dynamic jsonString = stream.ReadToEnd();
-						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
-						localVersion = versionclient["clientVersion"];
-					}
-				}
-				catch { }
-			}
-
-			// Se as versões forem diferentes, força o update
-			if (remoteVersion != localVersion)
-			{
-				UpdateClient();
-				if (File.Exists(tempConfigPath))
-				{
-					File.Delete(tempConfigPath);
-				}
-				return;
-			}
-
-			// Se as versões forem iguais, permite abrir o cliente normalmente
-			if (clientDownloaded == true || !Directory.Exists(GetLauncherPath(true)))
-			{
-				Process.Start(GetLauncherPath() + "/bin/" + clientExecutableName);
-				this.Close();
-			}
-			else
+			if (needUpdate == true || !Directory.Exists(GetLauncherPath()))
 			{
 				try
 				{
@@ -272,6 +190,25 @@ namespace MalyOtLauncherUpdate
 				catch (Exception ex)
 				{
 					labelVersion.Text = ex.ToString();
+				}
+			}
+			else
+			{
+				if (clientDownloaded == true || !Directory.Exists(GetLauncherPath(true)))
+				{
+					Process.Start(GetLauncherPath() + "/bin/" + clientExecutableName);
+					this.Close();
+				}
+				else
+				{
+					try
+					{
+						UpdateClient();
+					}
+					catch (Exception ex)
+					{
+						labelVersion.Text = ex.ToString();
+					}
 				}
 			}
 		}
