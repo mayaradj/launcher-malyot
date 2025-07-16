@@ -29,5 +29,5 @@ jobs:
     - name: Upload WebApp1 Build Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: CanaryLauncher
-        path: /home/runner/work/CanaryLauncherUpdate/CanaryLauncherUpdate/bin/Debug/net6.0-windows/publish/
+        name: MalyOtLauncher
+        path: /home/runner/work/MalyOtLauncher/MalyOtLauncher/bin/Debug/net6.0-windows/publish/

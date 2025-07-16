@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AssemblyName>MalyOtLauncher</AssemblyName>
+    <RootNamespace>MalyOtLauncher</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ionic.Zip" Version="1.9.1.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\background.jpg" />
+    <Resource Include="Assets\bg_button_update.png" />
+    <Resource Include="Assets\bg_hints.png" />
+    <Resource Include="Assets\button_hover_play.png" />
+    <Resource Include="Assets\button_hover_update.png" />
+    <Resource Include="Assets\button_play.png" />
+    <Resource Include="Assets\button_update.png" />
+    <Resource Include="Assets\icon_play.png" />
+    <Resource Include="Assets\icon_update.png" />
+    <Resource Include="Assets\launcher_ico.png" />
+    <Resource Include="Assets\logo.png" />
+    <Resource Include="Assets\logo_company.png" />
+    <Resource Include="Assets\rh_lore.png" />
+  </ItemGroup>
+
+</Project> 

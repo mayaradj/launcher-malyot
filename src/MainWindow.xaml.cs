@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using Ionic.Zip;
 using LauncherConfig;
 
-namespace CanaryLauncherUpdate
+namespace MalyOtLauncherUpdate
 {
 	public partial class MainWindow : Window
 	{

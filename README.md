@@ -1,4 +1,4 @@
-# Canary Launcher Update
+# MalyOt Launcher Update
 * C# WPF
 * .NET 6.0
 
