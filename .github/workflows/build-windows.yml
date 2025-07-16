@@ -17,8 +17,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-          Solution_Name: MalyOtLauncher.csproj
-    Test_Project_Path: MalyOtLauncher.csproj
+      Solution_Name: MalyOtLauncher.csproj
+      Test_Project_Path: MalyOtLauncher.csproj
 
     steps:
     - name: Checkout
