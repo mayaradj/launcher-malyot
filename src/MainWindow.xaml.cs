@@ -49,6 +49,7 @@ namespace MalyOtLauncherUpdate
 
 		public MainWindow()
 		{
+			System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 			InitializeComponent();
 		}
 
@@ -193,12 +194,24 @@ namespace MalyOtLauncherUpdate
 
 		private void ExtractZip(string path, ExtractExistingFileAction existingFileAction)
 		{
-			using (ZipFile modZip = ZipFile.Read(path))
+			try
 			{
-				foreach (ZipEntry zipEntry in modZip)
+				using (ZipFile modZip = ZipFile.Read(path))
 				{
-					zipEntry.Extract(GetLauncherPath(), existingFileAction);
+					System.Diagnostics.Debug.WriteLine($"Arquivo ZIP aberto com {modZip.Count} entradas");
+					
+					foreach (ZipEntry zipEntry in modZip)
+					{
+						System.Diagnostics.Debug.WriteLine($"Extraindo: {zipEntry.FileName}");
+						zipEntry.Extract(GetLauncherPath(), existingFileAction);
+					}
 				}
+				System.Diagnostics.Debug.WriteLine("Descompactação concluída com sucesso");
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Erro na descompactação: {ex.Message}");
+				throw;
 			}
 		}
 
@@ -206,6 +219,22 @@ namespace MalyOtLauncherUpdate
 		{
 			buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_play.png")));
 			buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_play.png"));
+
+			// Verificar se o download foi bem-sucedido
+			if (e.Error != null)
+			{
+				MessageBox.Show($"Erro no download: {e.Error.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
+
+			string zipPath = GetLauncherPath() + "/tibia.zip";
+			
+			// Verificar se o arquivo ZIP existe
+			if (!File.Exists(zipPath))
+			{
+				MessageBox.Show("Arquivo ZIP não encontrado após download", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
 
 			if (clientConfig.replaceFolders)
 			{
@@ -222,9 +251,18 @@ namespace MalyOtLauncherUpdate
 			// Adds the task to a secondary task to prevent the program from crashing while this is running
 			await Task.Run(() =>
 			{
-				Directory.CreateDirectory(GetLauncherPath());
-				ExtractZip(GetLauncherPath() + "/tibia.zip", ExtractExistingFileAction.OverwriteSilently);
-				File.Delete(GetLauncherPath() + "/tibia.zip");
+				try
+				{
+					Directory.CreateDirectory(GetLauncherPath());
+					ExtractZip(zipPath, ExtractExistingFileAction.OverwriteSilently);
+					File.Delete(zipPath);
+				}
+				catch (Exception ex)
+				{
+					// Log do erro para debug
+					System.Diagnostics.Debug.WriteLine($"Erro na descompactação: {ex.Message}");
+					throw;
+				}
 			});
 			progressbarDownload.Value = 100;
 
