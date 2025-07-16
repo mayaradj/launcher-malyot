@@ -77,31 +77,65 @@ namespace MalyOtLauncherUpdate
 			ImageLogoServer.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/logo.png"));
 			ImageLogoCompany.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/logo_company.png"));
 
-			newVersion = clientConfig.clientVersion;
+			// Sempre baixa o arquivo remoto para um arquivo temporário
+			string tempConfigPath = Path.Combine(GetLauncherPath(true), "launcher_config_remote.json");
+			try
+			{
+				new WebClient().DownloadFile(launcerConfigUrl, tempConfigPath);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Erro ao baixar o arquivo de configuração remoto: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
+
+			// Lê as versões
+			string remoteVersion = "";
+			string localVersion = "";
+			if (File.Exists(tempConfigPath))
+			{
+				try
+				{
+					using (StreamReader stream = new StreamReader(tempConfigPath))
+					{
+						dynamic jsonString = stream.ReadToEnd();
+						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
+						remoteVersion = versionclient["clientVersion"];
+					}
+				}
+				catch { }
+			}
+			if (File.Exists(GetLauncherPath(true) + "/launcher_config.json"))
+			{
+				try
+				{
+					using (StreamReader stream = new StreamReader(GetLauncherPath(true) + "/launcher_config.json"))
+					{
+						dynamic jsonString = stream.ReadToEnd();
+						dynamic versionclient = JsonConvert.DeserializeObject(jsonString);
+						localVersion = versionclient["clientVersion"];
+					}
+				}
+				catch { }
+			}
+
+			labelVersion.Text = "v" + programVersion;
 			progressbarDownload.Visibility = Visibility.Collapsed;
 			labelClientVersion.Visibility = Visibility.Collapsed;
 			labelDownloadPercent.Visibility = Visibility.Collapsed;
 
-			if (File.Exists(GetLauncherPath(true) + "/launcher_config.json"))
+			if (remoteVersion != localVersion)
 			{
-				// Read actual client version
-				string actualVersion = GetClientVersion(GetLauncherPath(true));
-				labelVersion.Text = "v" + programVersion;
-
-				if (newVersion != actualVersion)
-				{
-					buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_update.png")));
-					buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_update.png"));
-					labelClientVersion.Content = newVersion;
-					labelClientVersion.Visibility = Visibility.Visible;
-					buttonPlay.Visibility = Visibility.Visible;
-					buttonPlay_tooltip.Text = "Update";
-					needUpdate = true;
-				}
+				buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_update.png")));
+				buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_update.png"));
+				labelClientVersion.Content = remoteVersion;
+				labelClientVersion.Visibility = Visibility.Visible;
+				buttonPlay.Visibility = Visibility.Visible;
+				buttonPlay_tooltip.Text = "Update";
+				needUpdate = true;
 			}
-			if (!File.Exists(GetLauncherPath(true) + "/launcher_config.json") || Directory.Exists(GetLauncherPath()) && Directory.GetFiles(GetLauncherPath()).Length == 0 && Directory.GetDirectories(GetLauncherPath()).Length == 0)
+			else if (!File.Exists(GetLauncherPath(true) + "/launcher_config.json") || (Directory.Exists(GetLauncherPath()) && Directory.GetFiles(GetLauncherPath()).Length == 0 && Directory.GetDirectories(GetLauncherPath()).Length == 0))
 			{
-				labelVersion.Text = "v" + programVersion;
 				buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_update.png")));
 				buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_update.png"));
 				labelClientVersion.Content = "Download";
@@ -109,6 +143,16 @@ namespace MalyOtLauncherUpdate
 				buttonPlay.Visibility = Visibility.Visible;
 				buttonPlay_tooltip.Text = "Download";
 				needUpdate = true;
+			}
+			else
+			{
+				// Se as versões são iguais, mostra o botão de play normalmente
+				buttonPlay.Visibility = Visibility.Visible;
+				buttonPlayIcon.Source = new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/icon_play.png"));
+				buttonPlay.Background = new ImageBrush(new BitmapImage(new Uri(BaseUriHelper.GetBaseUri(this), "pack://application:,,,/Assets/button_play.png")));
+				labelClientVersion.Content = localVersion;
+				labelClientVersion.Visibility = Visibility.Visible;
+				buttonPlay_tooltip.Text = localVersion;
 			}
 		}
 
@@ -270,6 +314,13 @@ namespace MalyOtLauncherUpdate
 			WebClient webClient = new WebClient();
 			string localPath = Path.Combine(GetLauncherPath(true), "launcher_config.json");
 			webClient.DownloadFile(launcerConfigUrl, localPath);
+
+			// Após a atualização, substituir o arquivo launcher_config.json local pelo remoto
+			string tempConfigPath = Path.Combine(GetLauncherPath(true), "launcher_config_remote.json");
+			if (File.Exists(tempConfigPath))
+			{
+				File.Copy(tempConfigPath, localPath, true);
+			}
 
 			AddReadOnly();
 			CreateShortcut();
