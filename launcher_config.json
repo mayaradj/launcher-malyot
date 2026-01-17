@@ -24,6 +24,6 @@ NOTE: Set it to "false" or only "" to not use the client folder, so everything w
 		}
 	],
 	"clientFolder": "MalyOT-Client14.12",
-	"newClientUrl": "https://www.malyot.com.br/asdasdasdasda/MalyOT-Client14.12.zip",
+	"newClientUrl": "https://www.malyot.com.br/asdasdasdasda/update/MalyOT-Client14.12.zip",
 	"clientExecutable": "client.exe"
 }
