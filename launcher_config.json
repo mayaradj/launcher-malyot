@@ -9,7 +9,7 @@ NOTE: Set it to "false" or only "" to not use the client folder, so everything w
 • executable The path to the client's executable file, represented as "bin/client.exe"
 */
 {
-	"clientVersion": "14.12.12",
+	"clientVersion": "14.12.20260116",
 	"launcherVersion": "1.0",
 	"replaceFolders": true,
 	"replaceFolderName": [
@@ -23,7 +23,7 @@ NOTE: Set it to "false" or only "" to not use the client folder, so everything w
 			"name": "bin"
 		}
 	],
-	"clientFolder": "Tibia",
-	"newClientUrl": "https://github.com/mayaradj/launcher-malyot/releases/download/update/client-to-update.zip",
+	"clientFolder": "MalyOT-Client14.12",
+	"newClientUrl": "https://www.malyot.com.br/asdasdasdasda/MalyOT-Client14.12.zip",
 	"clientExecutable": "client.exe"
 }
